@@ -3,6 +3,6 @@ build-by-default: true
 branches:
 - 5.0
 projects:
-  Fireworks-PM4:
+  Fireworks-PM5:
     path: ""
 ...
