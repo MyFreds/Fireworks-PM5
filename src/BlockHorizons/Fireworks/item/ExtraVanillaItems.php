@@ -9,7 +9,7 @@ use pocketmine\item\ItemTypeIds;
 use pocketmine\utils\CloningRegistryTrait;
 
 /**
- * @method static Crossbow CROSSBOW()
+ * @method static Fireworks FIREWORKS()
  */
 class ExtraVanillaItems{
     use CloningRegistryTrait;
