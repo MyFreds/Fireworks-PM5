@@ -14,6 +14,7 @@ use pocketmine\item\ItemTypeIds;
 use pocketmine\item\StringToItemParser;
 use pocketmine\data\bedrock\item\ItemTypeNames;
 use pocketmine\data\bedrock\item\SavedItemData;
+use pocketmine\item\Item;
 use pocketmine\world\format\io\GlobalItemDataHandlers;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\network\mcpe\protocol\types\entity\EntityIds;
@@ -27,13 +28,13 @@ class Loader extends PluginBase
 	{
 //		ItemFactory::getInstance()->register(new Fireworks(new ItemIdentifier(ItemIds::FIREWORKS, 0), "Fireworks"), true);
 		$itemDeserializer = GlobalItemDataHandlers::getDeserializer();
-                $itemSerializer = GlobalItemDataHandlers::getSerializer();
-                $stringToItemParser = StringToItemParser::getInstance();
+        $itemSerializer = GlobalItemDataHandlers::getSerializer();
+        $stringToItemParser = StringToItemParser::getInstance();
 
 		$fireworks = ExtraVanillaItems::FIREWORKS();
-                $itemDeserializer->map(ItemTypeNames::FIREWORK_ROCKET, static fn() => clone $fireworks);
-                $itemSerializer->map($fireworks, static fn() => new SavedItemData(ItemTypeNames::FIREWORK_ROCKET));
-                $stringToItemParser->register("firework_rocket", static fn() => clone $fireworks);
+        $itemDeserializer->map(ItemTypeNames::FIREWORK_ROCKET, static fn() => clone $fireworks);
+        $itemSerializer->map($fireworks, static fn() => new SavedItemData(ItemTypeNames::FIREWORK_ROCKET));
+        $stringToItemParser->register("firework_rocket", static fn() => clone $fireworks);
 		
 		EntityFactory::getInstance()->register(FireworksRocket::class, static function (World $world, CompoundTag $nbt): FireworksRocket {
 			return new FireworksRocket(EntityDataHelper::parseLocation($nbt, $world), Item::nbtDeserialize($nbt->getCompoundTag("Item")));

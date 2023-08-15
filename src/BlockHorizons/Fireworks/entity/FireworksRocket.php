@@ -11,11 +11,11 @@ use pocketmine\entity\EntitySizeInfo;
 use pocketmine\entity\Location;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\network\mcpe\protocol\types\CacheableNbt;
-use pocketmine\network\mcpe\protocol\types\LevelSoundEvent;
 use pocketmine\network\mcpe\protocol\LevelSoundEventPacket;
+use pocketmine\network\mcpe\protocol\types\CacheableNbt;
 use pocketmine\network\mcpe\protocol\types\entity\EntityIds;
 use pocketmine\network\mcpe\protocol\types\entity\EntityMetadataCollection;
+use pocketmine\network\mcpe\protocol\types\LevelSoundEvent;
 
 class FireworksRocket extends Entity
 {
@@ -26,18 +26,6 @@ class FireworksRocket extends Entity
 	{
 		return EntityIds::FIREWORKS_ROCKET;
 	}
-
-	public function getInitialDragMultiplier(): float
-        {
-        // You can adjust this value as per your requirements.
-               return 1.0;
-        }
-
-        public function getInitialGravity(): float
-        {
-        // You can adjust this value as per your requirements.
-              return 1.0;
-        }
 
 	/** @var int */
 	protected $lifeTime = 0;
@@ -54,7 +42,23 @@ class FireworksRocket extends Entity
 			$this->setLifeTime($lifeTime ?? $fireworks->getRandomizedFlightDuration());
 		}
 
-		$location->getWorld()->broadcastPacketToViewers($this->location, LevelSoundEventPacket::create(LevelSoundEvent::LAUNCH, $this->location->asVector3(), -1, ":", false, false));
+		$location->getWorld()->broadcastPacketToViewers($this->location, LevelSoundEventPacket::nonActorSound(LevelSoundEvent::LAUNCH, $this->location->asVector3(), false));
+	}
+
+	protected function getInitialDragMultiplier(): float{
+		return 0.99;
+	}
+
+	protected function getInitialGravity(): float{
+		return 0.05;
+	}
+
+	/**
+	 * TODO: The entity should be saved and loaded, but this is not possible.
+	 * @see https://bugs.mojang.com/browse/MCPE-165230
+	 */
+	public function canSaveWithChunk(): bool{
+		return false;
 	}
 
 	protected function tryChangeMovement(): void
@@ -104,28 +108,26 @@ class FireworksRocket extends Entity
 	{
 		// This late in, there's 0 chance fireworks tag is null
 		$fireworksTag = $this->fireworks->getNamedTag()->getCompoundTag("Fireworks");
-                if ($fireworksTag !== null) {
-                $explosionsTag = $fireworksTag->getListTag("Explosions");
-
-                if ($explosionsTag === null) {
-                $player = $this->fireworks->getOwningEntity();
+		$explosionsTag = $fireworksTag->getListTag("Explosions");
+		if ($explosionsTag === null) {
+			// We don't throw an error here since there are fireworks that can die without noise or particles,
+			// which means they are lacking an explosion tag.
 			return;
 		}
 
 		foreach ($explosionsTag->getValue() as $info) {
 			if ($info instanceof CompoundTag) {
 				if ($info->getByte("FireworkType", 0) === Fireworks::TYPE_HUGE_SPHERE) {
-					$this->getWorld()->broadcastPacketToViewers($this->location, LevelSoundEventPacket::create(LevelSoundEvent::LARGE_BLAST, $this->location->asVector3(), -1, ":", false, false));
+                    $this->getWorld()->broadcastPacketToViewers($this->location, LevelSoundEventPacket::nonActorSound(LevelSoundEvent::LARGE_BLAST, $this->location->asVector3(), false));
 				} else {
-					$this->getWorld()->broadcastPacketToViewers($this->location, LevelSoundEventPacket::create(LevelSoundEvent::BLAST, $this->location->asVector3(), -1, ":", false, false));
-				}
+                    $this->getWorld()->broadcastPacketToViewers($this->location, LevelSoundEventPacket::nonActorSound(LevelSoundEvent::BLAST, $this->location->asVector3(), false));
+                }
 
 				if ($info->getByte("FireworkFlicker", 0) === 1) {
-					$this->getWorld()->broadcastPacketToViewers($this->location, LevelSoundEventPacket::create(LevelSoundEvent::TWINKLE, $this->location->asVector3(), -1,":", false, false));
-				 }
-			 }
-		 }
-	     }
+                    $this->getWorld()->broadcastPacketToViewers($this->location, LevelSoundEventPacket::nonActorSound(LevelSoundEvent::TWINKLE, $this->location->asVector3(), false));
+                }
+			}
+		}
 	}
 
 	public function syncNetworkData(EntityMetadataCollection $properties): void
@@ -138,4 +140,11 @@ class FireworksRocket extends Entity
 	{
 		return new EntitySizeInfo(0.25, 0.25);
 	}
+
+    public function saveNBT(): CompoundTag
+    {
+        $nbt = parent::saveNBT();
+        $nbt->setTag("Item", $this->fireworks->nbtSerialize());
+        return $nbt;
+    }
 }
