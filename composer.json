@@ -1,7 +1,17 @@
 {
-    "name": "fireworks/opinqz_composer",
-    "autoload": {
-        "classmap": ["src"]
+    "name": "opinqz/firework_composer",
+    "type": "library",
+    "minimum-stability": "stable",
+    "require": {
+       "pocketmine/pocketmine-mp": "^5.0.0"
     },
-    "require": {}
+    "autoload": {
+      "classmap": ["src"]
+    },
+    "extra": {
+        "virion": {
+            "spec": "3.0",
+            "namespace-root": "BlockHorizons\\Fireworks\\Loader"
+        }
+    }
 }
