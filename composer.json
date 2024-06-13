@@ -1,0 +1,7 @@
+{
+    "name": "fireworks/opinqz_composer",
+    "autoload": {
+        "classmap": ["src"]
+    },
+    "require": {}
+}
